@@ -1,6 +1,9 @@
 /**
+ * @webside: 沪江小D (https://dict.hjenglish.com/)
  * @desc: 英/美式发音、听力例句;
  */
+
+// TODO 沪江加入了反爬, 待解决!!!
 
 const tools = require('../tools');
 const axios = require('axios');

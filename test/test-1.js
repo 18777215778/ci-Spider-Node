@@ -12,7 +12,7 @@ let wordInfo = {
     // 单词
     word: '',
     // 音节
-    syllable: [],
+    syllable: null,
     // 英式音标
     symbolUK: '',
     // 美式音标
@@ -30,7 +30,7 @@ let wordInfo = {
     // 英文释义
     paraEn: [],
     // 词组
-    group: [],
+    wordGroup: [],
     // 高频词性
     highProp: [],
     // 高频释义
@@ -47,18 +47,15 @@ let wordInfo = {
     affixes: []
 };
 
-
-
 async function loop(i) {
     let tempWordInfo = tools.deepCopy(wordInfo);
     tempWordInfo.word = wordList[i];
 
     await axios.all([
         // iciba.start(wordList[i], tempWordInfo)
-        freeDic.start(wordList[i], tempWordInfo)
+        // freeDic.start(wordList[i], tempWordInfo)
+        youDao.start(wordList[i], tempWordInfo)
     ]);
-
-    // console.log(tempWordInfo);
 }
 
 let interval = null;
@@ -72,5 +69,5 @@ let i = 0;
 //         i++;
 //     }
 // }, 3000);
-loop(0);
+loop(1);
 

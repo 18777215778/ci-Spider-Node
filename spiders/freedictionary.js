@@ -1,4 +1,5 @@
 /**
+ * @webside: thefreedictionary (https://www.thefreedictionary.com/)
  * @desc: 英/美式发音、音节;
  */
 
@@ -11,26 +12,28 @@ module.exports = {
 };
 
 async function start(w, wi) {
-
     let mainRes = await axios({
         method: 'get',
         url: `https://www.thefreedictionary.com/${w}`
     });
-
     resolveData(wi, mainRes);
 }
-
 
 function resolveData(wi, mainRes) {
     let $ = cheerio.load(mainRes.data);
 
-    resolveSyllable($);
-    resolveSymbolUK($);
-    resolveSymbolUS($);
+    let 
+      syllable = resolveSyllable($),
+      proUK = resolveProUK($),
+      proUS = resolveProUS($);
+
+    wi.syllable || (wi.syllable = syllable);
+    proUK && wi.proUK.push(proUK);
+    proUS && wi.proUS.push(proUS);
 }
 
 // 解析英式发音
-function resolveSymbolUK($) {
+function resolveProUK($) {
     let eles = $('.content-holder .snd2');
 
     if (eles.length === 0) return null;
@@ -48,7 +51,7 @@ function resolveSymbolUK($) {
 }
 
 // 解析美式发音
-function resolveSymbolUS($) {
+function resolveProUS($) {
     let eles = $('.content-holder .snd2');
 
     if (eles.length === 0) return null;
@@ -72,7 +75,6 @@ function resolveSyllable($) {
 
     syllableEle.each(function () {
         let str = $(this).text();
-
         if (str.includes('·')) {
             syllable = str.split('·');
             return false;

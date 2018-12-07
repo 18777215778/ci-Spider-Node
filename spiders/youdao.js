@@ -1,4 +1,5 @@
 /**
+ * @webside: 有道词典 (http://dict.youdao.com/)
  * @desc: 同根词、词组;
  */
 
@@ -11,70 +12,73 @@ module.exports = {
 };
 
 async function start(w, wi) {
-    let mainRes = await axios({
-        method: 'get',
-        url: `http://dict.youdao.com/w/eng/${w}`
-    });
+  let mainRes = await axios({
+      method: 'get',
+      url: `http://dict.youdao.com/w/eng/${w}`
+  });
 
-    resolveData(wi, mainRes);
+  resolveData(wi, mainRes);
 }
 
-
+// 解析所有服务器响应的数据
 function resolveData(wi, mainRes) {
-    let $ = cheerio.load(mainRes.data);
+  let $ = cheerio.load(mainRes.data);
+  
+  let
+    wordGroup = resolveWordGroup($),
+    sameRoot = resolveSameRoot($);
 
-    resolveWordGroup($);
-    resolveSomeRoot($);
+  wordGroup && wi.wordGroup.concat(wordGroup);
+  sameRoot && wi.sameRoot.concat(sameRoot);
 }
 
 // 解析词组
 function resolveWordGroup($) {
-    let groupEle = $('div#wordGroup > p.wordGroup');
+  let groupEle = $('div#webPhrase > p.wordGroup');
 
-    if (groupEle.length === 0) return null;
+  if (groupEle.length === 0) return null;
 
-    let wordGroup = [];
-    groupEle.each(function () {
+  let wordGroup = [];
+  groupEle.each(function () {
+      let en = $('.contentTitle',this).text();
+      $('.contentTitle', this).remove();
 
-        let en = $('.contentTitle',this).text();
-        $('.contentTitle', this).remove();
+      let cn = $(this)
+          .text()
+          .replace(/^\s+/, '')
+          .replace(/\s+$/, '');
 
-        let cn = $(this)
-            .text()
-            .replace(/^\s+/, '')
-            .replace(/\s+$/, '');
+      wordGroup.push({en: en, cn: cn});
+  });
 
-        wordGroup.push({en: en, cn: cn});
-    });
-
-    return wordGroup;
+  return wordGroup;
 }
 
 // 解析同根词
-function resolveSomeRoot($) {
-    let someRootEle = $('div#relWordTab > p.wordGroup');
+function resolveSameRoot($) {
+  let SameRootEle = $('div#relWordTab p.wordGroup');
 
-    if (someRootEle.length === 0) return null;
+  if (SameRootEle.length === 0) return null;
 
-    let someRootList = [];
-    someRootEle.each(function () {
+  let SameRootList = [];
+  SameRootEle.each(function () {
 
-        let en = $('.contentTitle',this)
-            .text()
-            .replace(/^\s+/, '')
-            .replace(/\s+$/, '');
+      let en = $('.contentTitle',this)
+          .text()
+          .replace(/^\s+/, '')
+          .replace(/\s+$/, '');
 
-        $('.contentTitle', this).remove();
+      $('.contentTitle', this).remove();
 
-        let cn = $(this)
-            .text()
-            .replace(/^\s+/, '')
-            .replace(/\s+$/, '');
+      let cn = $(this)
+          .text()
+          .replace(/^\s+/, '')
+          .replace(/\s+$/, '');
 
-        if (/(词根：)|(词缀：)/.test(cn)) return;
+      if (/(词根：)|(词缀：)/.test(cn)) return;
 
-        someRootList.push({en: en, cn: cn});
-    });
+      SameRootList.push({en: en, cn: cn});
+  });
 
-    return someRootList;
+  return SameRootList;
 }
